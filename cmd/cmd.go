@@ -8,7 +8,6 @@ import (
 
 func main() {
 	ifile, err := lexer.NewInputFile("/Users/ozankasikci/Documents/projects/ist/cmd/test.ist")
-	q.Q(ifile)
 	if err != nil {
 		log.Fatal(err)
 	}

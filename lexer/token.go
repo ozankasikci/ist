@@ -1,7 +1,17 @@
 package lexer
 
-type Token struct {
+type TokenType int
 
+const (
+	Rune TokenType = iota
+	Identifier
+	Number
+	String
+)
+
+type Token struct {
+	Type     TokenType
+	Contents string
 }
 
 type Position struct {
