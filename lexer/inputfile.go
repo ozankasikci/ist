@@ -15,13 +15,13 @@ type inputFile struct {
 func NewInputFile(path string) (*inputFile, error)  {
 	name := filepath.Base(path)
 
-	ifile := &inputFile{Name: name, Path: path}
+	iFile := &inputFile{Name: name, Path: path}
 
 	contents, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 
-	ifile.Contents = []rune(string(contents))
-	return ifile, nil
+	iFile.Contents = []rune(string(contents))
+	return iFile, nil
 }
