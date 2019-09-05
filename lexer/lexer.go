@@ -9,6 +9,7 @@ import (
 
 type lexer struct {
 	input            *inputFile
+	// the position in the input.Contents rune slice
 	startPos, endPos int
 	currentPos       Position
 	tokenStart       Position
@@ -23,8 +24,13 @@ func (l *lexer) lex() {
 		if isEOF(l.look(0)) {
 			l.input.NewLines = append(l.input.NewLines, l.endPos)
 			return
-		} else if isLetter(l.look(0)) || l.look(0) == '_' {
+		}
+
+		// the rest must be a token
+		if isLetter(l.look(0)) || l.look(0) == '_' {
 			l.recognizeIdentifierToken()
+		} else if isNumber(l.look(0)) {
+			l.recognizeNumberToken()
 		} else {
 			log.Panicf("unrecognized token")
 		}
@@ -64,6 +70,11 @@ func (l*lexer) recognizeIdentifierToken() {
 	}
 
 	l.pushToken(Identifier)
+}
+
+func (l *lexer) recognizeNumberToken()  {
+	l.consume()
+	l.pushToken(Number)
 }
 
 func (l *lexer) consume()  {
@@ -123,10 +134,14 @@ func isEOF(r rune) bool {
 	return r == 0
 }
 
-// IsSpace reports whether the rune is a space character as defined
-// by Unicode's White Space property; in the Latin-1 space
-// this is
-//	'\t', '\n', '\v', '\f', '\r', ' ', U+0085 (NEL), U+00A0 (NBSP).
+func isNumber(r rune) bool {
+	return unicode.IsNumber(r)
+}
+
 func isSpace(r rune) bool {
+	// IsSpace reports whether the rune is a space character as defined
+	// by Unicode's White Space property; in the Latin-1 space
+	// this is
+	//	'\t', '\n', '\v', '\f', '\r', ' ', U+0085 (NEL), U+00A0 (NBSP).
 	return (r <= ' ' || unicode.IsSpace(r)) && !isEOF(r)
 }
