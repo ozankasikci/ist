@@ -16,12 +16,14 @@ type lexer struct {
 
 func (l *lexer) lex() {
 	for {
-		l.skipLayoutAndComments()
+		// skips new lines and comments
+		l.skipSpaceAndComments()
 
-		if isEOF(l.lookAhead(0)) {
+		// the end of file, return
+		if isEOF(l.look(0)) {
 			l.input.NewLines = append(l.input.NewLines, l.endPos)
 			return
-		} else if isLetter(l.lookAhead(0)) || l.lookAhead(0) == '_' {
+		} else if isLetter(l.look(0)) || l.look(0) == '_' {
 			l.recognizeIdentifierToken()
 		} else {
 			log.Panicf("unrecognized token")
@@ -43,9 +45,9 @@ func Lex(i *inputFile) []*Token {
 	return l.input.Tokens
 }
 
-func (l *lexer) lookAhead(distance int) rune {
+func (l *lexer) look(distance int) rune {
 	if distance < 0 {
-		panic(fmt.Sprintf("Tried to lookAhead a negative number: %d", distance))
+		panic(fmt.Sprintf("Tried to look a negative number: %d", distance))
 	}
 
 	if l.endPos+distance >= len(l.input.Contents) {
@@ -57,7 +59,7 @@ func (l *lexer) lookAhead(distance int) rune {
 func (l*lexer) recognizeIdentifierToken() {
 	l.consume()
 
-	for isLetter(l.lookAhead(0)) || isDecimalDigit(l.lookAhead(0)) || l.lookAhead(0) == '_' {
+	for isLetter(l.look(0)) || isDecimalDigit(l.look(0)) || l.look(0) == '_' {
 		l.consume()
 	}
 
@@ -67,7 +69,7 @@ func (l*lexer) recognizeIdentifierToken() {
 func (l *lexer) consume()  {
 	l.currentPos.Char += 1
 
-	if isEOL(l.lookAhead(0)) {
+	if isEOL(l.look(0)) {
 		l.currentPos.Char = 1
 		l.currentPos.Line += 1
 		l.input.NewLines = append(l.input.NewLines, l.endPos)
@@ -93,16 +95,15 @@ func (l *lexer) flushBuffer() {
 	l.tokenStart = l.currentPos
 }
 
-func (l *lexer) skipLayoutAndComments() {
+func (l *lexer) skipSpaceAndComments() {
 	for {
-		for isLayout(l.lookAhead(0)) {
+		for isSpace(l.look(0)) {
 			l.consume()
 		}
 		l.flushBuffer()
 		break
 	}
 
-	//v.printBuffer()
 	l.flushBuffer()
 }
 
@@ -126,6 +127,6 @@ func isEOF(r rune) bool {
 // by Unicode's White Space property; in the Latin-1 space
 // this is
 //	'\t', '\n', '\v', '\f', '\r', ' ', U+0085 (NEL), U+00A0 (NBSP).
-func isLayout(r rune) bool {
+func isSpace(r rune) bool {
 	return (r <= ' ' || unicode.IsSpace(r)) && !isEOF(r)
 }
