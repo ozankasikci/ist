@@ -10,9 +10,9 @@ import (
 type lexer struct {
 	input            *inputFile
 	// the position in the input.Contents rune slice
-	startPos, endPos int
-	currentPos       Position
-	tokenStart       Position
+	bufferStart, bufferEnd int
+	currentPos             Position
+	tokenStart             Position
 }
 
 func (l *lexer) lex() {
@@ -22,7 +22,7 @@ func (l *lexer) lex() {
 
 		// the end of file, return
 		if isEOF(l.look(0)) {
-			l.input.NewLines = append(l.input.NewLines, l.endPos)
+			l.input.NewLines = append(l.input.NewLines, l.bufferEnd)
 			return
 		}
 
@@ -39,11 +39,11 @@ func (l *lexer) lex() {
 
 func Lex(i *inputFile) []*Token {
 	l := &lexer{
-		input:      i,
-		startPos:   0,
-		endPos:     0,
-		currentPos: Position{Filename: i.Name, Line: 1, Char: 1},
-		tokenStart: Position{Filename: i.Name, Line: 1, Char: 1},
+		input:       i,
+		bufferStart: 0,
+		bufferEnd:   0,
+		currentPos:  Position{Filename: i.Name, Line: 1, Char: 1},
+		tokenStart:  Position{Filename: i.Name, Line: 1, Char: 1},
 	}
 
 	l.lex()
@@ -56,10 +56,10 @@ func (l *lexer) look(distance int) rune {
 		panic(fmt.Sprintf("Tried to look a negative number: %d", distance))
 	}
 
-	if l.endPos+distance >= len(l.input.Contents) {
+	if l.bufferEnd+distance >= len(l.input.Contents) {
 		return 0
 	}
-	return l.input.Contents[l.endPos+distance]
+	return l.input.Contents[l.bufferEnd+distance]
 }
 
 func (l*lexer) recognizeIdentifierToken() {
@@ -83,25 +83,25 @@ func (l *lexer) consume()  {
 	if isEOL(l.look(0)) {
 		l.currentPos.Char = 1
 		l.currentPos.Line += 1
-		l.input.NewLines = append(l.input.NewLines, l.endPos)
+		l.input.NewLines = append(l.input.NewLines, l.bufferEnd)
 	}
 
-	l.endPos += 1
+	l.bufferEnd += 1
 }
 
 func (l*lexer) pushToken(t TokenType) {
 	tok := &Token{
 		Type:     t,
-		Contents: string(l.input.Contents[l.startPos:l.endPos]),
+		Contents: string(l.input.Contents[l.bufferStart:l.bufferEnd]),
 	}
 
 	l.input.Tokens = append(l.input.Tokens, tok)
-	q.Q("lexer", "[%4d:%4d:% 11s] `%s`\n", l.startPos, l.endPos, tok.Type, tok.Contents)
+	q.Q("lexer", "[%4d:%4d:% 11s] `%s`\n", l.bufferStart, l.bufferEnd, tok.Type, tok.Contents)
 	l.flushBuffer()
 }
 
 func (l *lexer) flushBuffer() {
-	l.startPos = l.endPos
+	l.bufferStart = l.bufferEnd
 
 	l.tokenStart = l.currentPos
 }
