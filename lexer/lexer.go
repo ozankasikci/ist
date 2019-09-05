@@ -4,15 +4,18 @@ import (
 	"fmt"
 	"github.com/y0ssar1an/q"
 	"log"
+	"os"
 	"unicode"
 )
 
 type lexer struct {
-	input            *inputFile
+	input *inputFile
+
 	// the position in the input.Contents rune slice
 	bufferStart, bufferEnd int
-	currentPos             Position
-	tokenStart             Position
+
+	//  the position in the inputFile source
+	currentPos, tokenStart Position
 }
 
 func (l *lexer) lex() {
@@ -29,6 +32,8 @@ func (l *lexer) lex() {
 		// the rest must be a token
 		if isLetter(l.look(0)) || l.look(0) == '_' {
 			l.recognizeIdentifierToken()
+		} else if l.look(0) == '"' {
+			l.recognizeStringToken()
 		} else if isNumber(l.look(0)) {
 			l.recognizeNumberToken()
 		} else {
@@ -62,7 +67,7 @@ func (l *lexer) look(distance int) rune {
 	return l.input.Contents[l.bufferEnd+distance]
 }
 
-func (l*lexer) recognizeIdentifierToken() {
+func (l *lexer) recognizeIdentifierToken() {
 	l.consume()
 
 	for isLetter(l.look(0)) || isDecimalDigit(l.look(0)) || l.look(0) == '_' {
@@ -72,12 +77,36 @@ func (l*lexer) recognizeIdentifierToken() {
 	l.pushToken(Identifier)
 }
 
-func (l *lexer) recognizeNumberToken()  {
+func (l *lexer) recognizeNumberToken() {
 	l.consume()
+
+	for isNumber(l.look(0)) {
+		l.consume()
+	}
+
 	l.pushToken(Number)
 }
 
-func (l *lexer) consume()  {
+func (l *lexer) recognizeStringToken() {
+	// prepare to read string value
+	l.flushBuffer()
+
+	for {
+		if l.look(0) == '"' {
+			// end of string, push token
+			l.pushToken(String)
+			l.consume()
+			return
+		} else if isEOF(l.look(0)) {
+			// end of file without ending string literal, exit
+			l.errPos(l.currentPos, "Unterminated string literal")
+		} else {
+			l.consume()
+		}
+	}
+}
+
+func (l *lexer) consume() {
 	l.currentPos.Char += 1
 
 	if isEOL(l.look(0)) {
@@ -89,7 +118,7 @@ func (l *lexer) consume()  {
 	l.bufferEnd += 1
 }
 
-func (l*lexer) pushToken(t TokenType) {
+func (l *lexer) pushToken(t TokenType) {
 	tok := &Token{
 		Type:     t,
 		Contents: string(l.input.Contents[l.bufferStart:l.bufferEnd]),
@@ -116,6 +145,13 @@ func (l *lexer) skipSpaceAndComments() {
 	}
 
 	l.flushBuffer()
+}
+
+func (l *lexer) errPos(pos Position, err string, rest ...interface{}) {
+	log.Printf("Position: %v", pos)
+	println(err)
+
+	os.Exit(1)
 }
 
 func isDecimalDigit(r rune) bool {
