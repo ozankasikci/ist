@@ -5,6 +5,7 @@ import (
 	"github.com/y0ssar1an/q"
 	"log"
 	"os"
+	"strings"
 	"unicode"
 )
 
@@ -36,6 +37,8 @@ func (l *lexer) lex() {
 			l.recognizeStringToken()
 		} else if isNumber(l.look(0)) {
 			l.recognizeNumberToken()
+		} else if isOperator(l.look(0)) {
+			l.recognizeOperatorToken()
 		} else {
 			log.Panicf("unrecognized token")
 		}
@@ -88,6 +91,8 @@ func (l *lexer) recognizeNumberToken() {
 }
 
 func (l *lexer) recognizeStringToken() {
+	pos := l.currentPos
+
 	// prepare to read string value
 	l.flushBuffer()
 
@@ -99,11 +104,24 @@ func (l *lexer) recognizeStringToken() {
 			return
 		} else if isEOF(l.look(0)) {
 			// end of file without ending string literal, exit
-			l.errPos(l.currentPos, "Unterminated string literal")
+			l.errPos(pos, "Unterminated string literal!")
 		} else {
 			l.consume()
 		}
 	}
+}
+
+func (l *lexer) recognizeOperatorToken()  {
+	pos := l.currentPos
+
+    if strings.ContainsRune("=!<>", l.look(0)) && l.look(1) == '=' {
+    	l.consume()
+		l.consume()
+	} else {
+		l.errPos(pos, "Unexpected operator!")
+	}
+
+    l.pushToken(Operator)
 }
 
 func (l *lexer) consume() {
@@ -172,6 +190,10 @@ func isEOF(r rune) bool {
 
 func isNumber(r rune) bool {
 	return unicode.IsNumber(r)
+}
+
+func isOperator(r rune) bool {
+	return strings.ContainsRune("+-*/=><!", r)
 }
 
 func isSpace(r rune) bool {

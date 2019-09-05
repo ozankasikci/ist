@@ -7,6 +7,7 @@ const (
 	Identifier
 	Number
 	String
+	Operator
 )
 
 type Token struct {
