@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	ifile, err := lexer.NewInputFile("/Users/ozankasikci/Documents/projects/ist/cmd/test.ist")
+	ifile, err := lexer.NewSourceFile("/Users/ozankasikci/Documents/projects/ist/cmd/test.ist")
 	if err != nil {
 		log.Fatal(err)
 	}
