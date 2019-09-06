@@ -5,23 +5,23 @@ import (
 	"path/filepath"
 )
 
-type inputFile struct {
+type SourceFile struct {
 	Path, Name string
 	Contents []rune
 	NewLines []int
 	Tokens []*Token
 }
 
-func NewInputFile(path string) (*inputFile, error)  {
+func NewSourceFile(path string) (*SourceFile, error)  {
 	name := filepath.Base(path)
 
-	iFile := &inputFile{Name: name, Path: path}
+	source := &SourceFile{Name: name, Path: path}
 
 	contents, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 
-	iFile.Contents = []rune(string(contents))
-	return iFile, nil
+	source.Contents = []rune(string(contents))
+	return source, nil
 }

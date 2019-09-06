@@ -10,12 +10,12 @@ import (
 )
 
 type lexer struct {
-	input *inputFile
+	source *SourceFile
 
-	// the position in the input.Contents rune slice
+	// the position in the source.Contents rune slice
 	bufferStart, bufferEnd int
 
-	//  the position in the inputFile source
+	//  the position in the SourceFile source
 	currentPos, tokenStart Position
 }
 
@@ -26,7 +26,7 @@ func (l *lexer) lex() {
 
 		// the end of file, return
 		if isEOF(l.look(0)) {
-			l.input.NewLines = append(l.input.NewLines, l.bufferEnd)
+			l.source.NewLines = append(l.source.NewLines, l.bufferEnd)
 			return
 		}
 
@@ -45,9 +45,9 @@ func (l *lexer) lex() {
 	}
 }
 
-func Lex(i *inputFile) []*Token {
+func Lex(i *SourceFile) []*Token {
 	l := &lexer{
-		input:       i,
+		source:      i,
 		bufferStart: 0,
 		bufferEnd:   0,
 		currentPos:  Position{Filename: i.Name, Line: 1, Char: 1},
@@ -56,7 +56,7 @@ func Lex(i *inputFile) []*Token {
 
 	l.lex()
 
-	return l.input.Tokens
+	return l.source.Tokens
 }
 
 func (l *lexer) look(distance int) rune {
@@ -64,10 +64,10 @@ func (l *lexer) look(distance int) rune {
 		panic(fmt.Sprintf("Tried to look a negative number: %d", distance))
 	}
 
-	if l.bufferEnd+distance >= len(l.input.Contents) {
+	if l.bufferEnd+distance >= len(l.source.Contents) {
 		return 0
 	}
-	return l.input.Contents[l.bufferEnd+distance]
+	return l.source.Contents[l.bufferEnd+distance]
 }
 
 func (l *lexer) recognizeIdentifierToken() {
@@ -111,17 +111,17 @@ func (l *lexer) recognizeStringToken() {
 	}
 }
 
-func (l *lexer) recognizeOperatorToken()  {
+func (l *lexer) recognizeOperatorToken() {
 	pos := l.currentPos
 
-    if strings.ContainsRune("=!<>", l.look(0)) && l.look(1) == '=' {
-    	l.consume()
+	if strings.ContainsRune("=!<>", l.look(0)) && l.look(1) == '=' {
+		l.consume()
 		l.consume()
 	} else {
 		l.errPos(pos, "Unexpected operator!")
 	}
 
-    l.pushToken(Operator)
+	l.pushToken(Operator)
 }
 
 func (l *lexer) consume() {
@@ -130,7 +130,7 @@ func (l *lexer) consume() {
 	if isEOL(l.look(0)) {
 		l.currentPos.Char = 1
 		l.currentPos.Line += 1
-		l.input.NewLines = append(l.input.NewLines, l.bufferEnd)
+		l.source.NewLines = append(l.source.NewLines, l.bufferEnd)
 	}
 
 	l.bufferEnd += 1
@@ -139,10 +139,10 @@ func (l *lexer) consume() {
 func (l *lexer) pushToken(t TokenType) {
 	tok := &Token{
 		Type:     t,
-		Contents: string(l.input.Contents[l.bufferStart:l.bufferEnd]),
+		Contents: string(l.source.Contents[l.bufferStart:l.bufferEnd]),
 	}
 
-	l.input.Tokens = append(l.input.Tokens, tok)
+	l.source.Tokens = append(l.source.Tokens, tok)
 	q.Q("lexer", "[%4d:%4d:% 11s] `%s`\n", l.bufferStart, l.bufferEnd, tok.Type, tok.Contents)
 	l.flushBuffer()
 }
@@ -172,30 +172,12 @@ func (l *lexer) errPos(pos Position, err string, rest ...interface{}) {
 	os.Exit(1)
 }
 
-func isDecimalDigit(r rune) bool {
-	return r >= '0' && r <= '9'
-}
-
-func isLetter(r rune) bool {
-	return unicode.IsLetter(r)
-}
-
-func isEOL(r rune) bool {
-	return r == '\n'
-}
-
-func isEOF(r rune) bool {
-	return r == 0
-}
-
-func isNumber(r rune) bool {
-	return unicode.IsNumber(r)
-}
-
-func isOperator(r rune) bool {
-	return strings.ContainsRune("+-*/=><!", r)
-}
-
+func isDecimalDigit(r rune) bool { return r >= '0' && r <= '9' }
+func isLetter(r rune) bool       { return unicode.IsLetter(r) }
+func isEOL(r rune) bool          { return r == '\n' }
+func isEOF(r rune) bool          { return r == 0 }
+func isNumber(r rune) bool       { return unicode.IsNumber(r) }
+func isOperator(r rune) bool     { return strings.ContainsRune("+-*/=><!", r) }
 func isSpace(r rune) bool {
 	// IsSpace reports whether the rune is a space character as defined
 	// by Unicode's White Space property; in the Latin-1 space
