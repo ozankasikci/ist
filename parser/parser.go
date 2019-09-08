@@ -14,18 +14,18 @@ type parser struct {
 	tree         *ParseTree
 }
 
-func Parse(source *lexer.SourceFile) (*ParseTree) {
+func Parse(source *lexer.SourceFile) *ParseTree {
 	p := &parser{
 		source: source,
-		tree: &ParseTree{Source: source},
+		tree:   &ParseTree{Source: source},
 	}
 
-    p.parse()
+	p.parse()
 
 	return p.tree
 }
 
-func (p *parser) parse()  {
+func (p *parser) parse() {
 	for p.look(0) != nil {
 		if n := p.parseDecl(true); n != nil {
 			println("parsed decl")
@@ -41,18 +41,18 @@ func (p *parser) look(ahead int) *lexer.Token {
 		panic("look method can not accept a negative value!")
 	}
 
-	if p.currentToken + ahead >= len(p.source.Tokens) {
+	if p.currentToken+ahead >= len(p.source.Tokens) {
 		return nil
 	}
 
-	return p.source.Tokens[p.currentToken + ahead]
+	return p.source.Tokens[p.currentToken+ahead]
 }
 
 func (p *parser) parseDecl(isTopLevel bool) ParseNode {
 	var res ParseNode
 
-    if typeDecl := p.parseTypeDecl(isTopLevel); typeDecl != nil {
-    	println("parseTypeDecl 1")
+	if typeDecl := p.parseTypeDecl(isTopLevel); typeDecl != nil {
+		println("parseTypeDecl 1")
 		res = typeDecl
 	} else if varDecl := p.parseVarDecl(isTopLevel); varDecl != nil {
 		println("parseVarDecl 1")
@@ -61,11 +61,11 @@ func (p *parser) parseDecl(isTopLevel bool) ParseNode {
 		return nil
 	}
 
-    return res
+	return res
 }
 
 func (p *parser) parseTypeDecl(isTopLevel bool) *TypeDeclNode {
-    return nil
+	return nil
 }
 
 func (p *parser) parseVarDecl(isTopLevel bool) *VarDeclNode {
@@ -102,27 +102,27 @@ func (p *parser) parseVarDeclBody() *VarDeclNode {
 		}
 	}
 
-    res := &VarDeclNode{
-    	Name: NewLocatedString(varName),
-    	Type: varType,
+	res := &VarDeclNode{
+		Name: NewLocatedString(varName),
+		Type: varType,
 	}
 
-    start := varName.Where.Start()
+	start := varName.Where.Start()
 
-    var end lexer.Position
-    if value != nil {
-    	res.Value = value
-    	end = value.Where().End()
+	var end lexer.Position
+	if value != nil {
+		res.Value = value
+		end = value.Where().End()
 	} else {
 		end = varType.Where().End()
 	}
 
-    res.SetWhere(lexer.NewSpan(start, end))
+	res.SetWhere(lexer.NewSpan(start, end))
 	return res
 }
 
 func (p *parser) parseType(mustParse bool) ParseNode {
-    var res ParseNode
+	var res ParseNode
 
 	if p.nextTokenIs(lexer.Identifier) {
 		res = p.parseNamedType()
@@ -130,7 +130,7 @@ func (p *parser) parseType(mustParse bool) ParseNode {
 		println("ParseType else")
 	}
 
-    return res
+	return res
 }
 
 func (p *parser) parseTypeReference(mustParse bool) *TypeReferenceNode {
@@ -161,22 +161,22 @@ func (p *parser) parseNamedType() *NamedTypeNode {
 
 func (p *parser) parseName() *NameNode {
 
-	if !p.nextTokenIs(lexer.Identifier)  {
+	if !p.nextTokenIs(lexer.Identifier) {
 		println("next is not identifier")
 		return nil
 	}
 
 	name := p.consumeToken()
-    res := &NameNode{ Name: NewLocatedString(name) }
-    res.SetWhere(name.Where)
+	res := &NameNode{Name: NewLocatedString(name)}
+	res.SetWhere(name.Where)
 
-    return res
+	return res
 }
 
 func (p *parser) parseExpr() ParseNode {
 	pri := p.parsePostfixExpr()
 	if pri == nil {
-		return  nil
+		return nil
 	}
 
 	return pri
@@ -216,7 +216,7 @@ func (p *parser) parseNumberLiteral() ParseNode {
 		return nil
 	}
 
-	t:= p.consumeToken()
+	t := p.consumeToken()
 	number := t.Contents
 	res := &NumberLitNode{}
 
@@ -274,12 +274,12 @@ func (p *parser) expect(typ lexer.TokenType, val string) *lexer.Token {
 	return p.consumeToken()
 }
 
-func (p *parser) err(text string)  {
+func (p *parser) err(text string) {
 	println("Parser error: ", text)
-	spew.Dump(struct{
-		CurrentToken int
+	spew.Dump(struct {
+		CurrentToken      int
 		CurrentTokenValue *lexer.Token
-		TokenCount int
+		TokenCount        int
 	}{
 		p.currentToken,
 		p.look(0),
@@ -341,13 +341,13 @@ func parseInt(num string, base int) (*big.Int, bool) {
 	return ret, true
 }
 
-func (p*parser) tokensMatch(args ...interface{}) bool {
-	if len(args) % 2 != 0 {
+func (p *parser) tokensMatch(args ...interface{}) bool {
+	if len(args)%2 != 0 {
 		panic("passed uneven args to tokensMatch")
 	}
 
-	for i := 0; i < len(args) / 2; i++ {
-		if !(p.tokenMatches(i, args[i * 2].(lexer.TokenType), args[i * 2 + 1].(string))) {
+	for i := 0; i < len(args)/2; i++ {
+		if !(p.tokenMatches(i, args[i*2].(lexer.TokenType), args[i*2+1].(string))) {
 			return false
 		}
 	}
