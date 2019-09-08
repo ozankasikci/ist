@@ -1,6 +1,1 @@
-line
-llinee 234 1 1
-123 "naber"
-123
-
-if a == 1
+int integerValue = 123
