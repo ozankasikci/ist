@@ -112,13 +112,13 @@ func (l *lexer) recognizeStringToken() {
 }
 
 func (l *lexer) recognizeOperatorToken() {
-	pos := l.currentPos
+	//pos := l.currentPos
 
 	if strings.ContainsRune("=!<>", l.look(0)) && l.look(1) == '=' {
 		l.consume()
 		l.consume()
 	} else {
-		l.errPos(pos, "Unexpected operator!")
+		l.consume()
 	}
 
 	l.pushToken(Operator)
@@ -140,6 +140,7 @@ func (l *lexer) pushToken(t TokenType) {
 	tok := &Token{
 		Type:     t,
 		Contents: string(l.source.Contents[l.bufferStart:l.bufferEnd]),
+		Where:    NewSpan(l.tokenStart, l.currentPos),
 	}
 
 	l.source.Tokens = append(l.source.Tokens, tok)
@@ -177,7 +178,7 @@ func isLetter(r rune) bool       { return unicode.IsLetter(r) }
 func isEOL(r rune) bool          { return r == '\n' }
 func isEOF(r rune) bool          { return r == 0 }
 func isNumber(r rune) bool       { return unicode.IsNumber(r) }
-func isOperator(r rune) bool     { return strings.ContainsRune("+-*/=><!", r) }
+func isOperator(r rune) bool     { return strings.ContainsRune("+-*/=><!:", r) }
 func isSpace(r rune) bool {
 	// IsSpace reports whether the rune is a space character as defined
 	// by Unicode's White Space property; in the Latin-1 space
