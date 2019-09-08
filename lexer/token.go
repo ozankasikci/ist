@@ -5,10 +5,14 @@ type TokenType int
 const (
 	Rune TokenType = iota
 	Identifier
+	Operator
 	Number
 	String
-	Operator
 )
+
+func (tt TokenType) String() string  {
+	return [...]string{"rune", "identifier", "operator", "number", "string"}[tt]
+}
 
 type Token struct {
 	Type     TokenType
