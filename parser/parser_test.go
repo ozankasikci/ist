@@ -13,8 +13,8 @@ func TestParse(t *testing.T) {
 
 	tokens := lexer.Lex(sourceFile)
 	sourceFile.Tokens = tokens
-	spew.Dump(tokens)
 
 	parseTree := Parse(sourceFile)
 	assert.NotNil(t, parseTree)
+	spew.Dump(parseTree)
 }
