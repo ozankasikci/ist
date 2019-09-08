@@ -14,10 +14,14 @@ type SourceFile struct {
 
 func NewSourceFile(path string) (*SourceFile, error)  {
 	name := filepath.Base(path)
-
 	source := &SourceFile{Name: name, Path: path}
 
-	contents, err := ioutil.ReadFile(path)
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return nil, err
+	}
+
+	contents, err := ioutil.ReadFile(absPath)
 	if err != nil {
 		return nil, err
 	}
