@@ -7,11 +7,11 @@ import (
 )
 
 func main() {
-	ifile, err := lexer.NewSourceFile("/Users/ozankasikci/Documents/projects/ist/cmd/test.ist")
+	sourceFile, err := lexer.NewSourceFile("/Users/ozankasikci/Documents/projects/ist/cmd/test.ist")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-    tokens := lexer.Lex(ifile)
+    tokens := lexer.Lex(sourceFile)
     q.Q(tokens)
 }

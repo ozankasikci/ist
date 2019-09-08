@@ -1,1 +1,1 @@
-int integerValue = 123
+integerValue int = 123
