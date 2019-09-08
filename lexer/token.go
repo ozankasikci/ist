@@ -33,6 +33,22 @@ type Span struct {
 	EndLine, EndChar int
 }
 
+func (s Span) Start() Position {
+	return Position{
+		Filename: s.Filename,
+		Line: s.StartLine,
+		Char: s.StartChar,
+	}
+}
+
+func (s Span) End() Position {
+	return Position{
+		Filename: s.Filename,
+		Line: s.EndLine,
+		Char: s.EndChar,
+	}
+}
+
 func NewSpan(start, end Position) Span {
 	return Span{
 		Filename: start.Filename,
