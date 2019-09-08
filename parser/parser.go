@@ -28,7 +28,6 @@ func Parse(source *lexer.SourceFile) *ParseTree {
 func (p *parser) parse() {
 	for p.look(0) != nil {
 		if n := p.parseDecl(true); n != nil {
-			println("parsed decl")
 			p.tree.AddNode(n)
 		} else {
 			log.Panicf("Unexpected token %v", p.look(0))
@@ -52,10 +51,8 @@ func (p *parser) parseDecl(isTopLevel bool) ParseNode {
 	var res ParseNode
 
 	if typeDecl := p.parseTypeDecl(isTopLevel); typeDecl != nil {
-		println("parseTypeDecl 1")
 		res = typeDecl
 	} else if varDecl := p.parseVarDecl(isTopLevel); varDecl != nil {
-		println("parseVarDecl 1")
 		res = varDecl
 	} else {
 		return nil
@@ -80,7 +77,6 @@ func (p *parser) parseVarDecl(isTopLevel bool) *VarDeclNode {
 func (p *parser) parseVarDeclBody() *VarDeclNode {
 
 	if !p.tokensMatch(lexer.Identifier, "", lexer.Identifier, "") {
-		println("tokens not match")
 		return nil
 	}
 
@@ -126,8 +122,6 @@ func (p *parser) parseType(mustParse bool) ParseNode {
 
 	if p.nextTokenIs(lexer.Identifier) {
 		res = p.parseNamedType()
-	} else {
-		println("ParseType else")
 	}
 
 	return res
@@ -162,7 +156,6 @@ func (p *parser) parseNamedType() *NamedTypeNode {
 func (p *parser) parseName() *NameNode {
 
 	if !p.nextTokenIs(lexer.Identifier) {
-		println("next is not identifier")
 		return nil
 	}
 
@@ -275,7 +268,6 @@ func (p *parser) expect(typ lexer.TokenType, val string) *lexer.Token {
 }
 
 func (p *parser) err(text string) {
-	println("Parser error: ", text)
 	spew.Dump(struct {
 		CurrentToken      int
 		CurrentTokenValue *lexer.Token
