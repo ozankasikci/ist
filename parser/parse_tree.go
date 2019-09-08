@@ -8,14 +8,14 @@ type ParseNode interface {
 
 type ParseTree struct {
 	Source *lexer.SourceFile
-	Nodes []ParseNode
+	Nodes  []ParseNode
 }
 
 type baseNode struct {
 	where lexer.Span
 }
 
-func (v *baseNode) Where() lexer.Span                { return v.where }
+func (v *baseNode) Where() lexer.Span { return v.where }
 
 type LocatedString struct {
 	Where lexer.Span
@@ -23,7 +23,7 @@ type LocatedString struct {
 }
 
 func NewLocatedString(token *lexer.Token) LocatedString {
-	return LocatedString{ Where: token.Where, Value: token.Contents }
+	return LocatedString{Where: token.Where, Value: token.Contents}
 }
 
 type DeclNode interface {
@@ -40,7 +40,7 @@ type TypeDeclNode struct {
 	Type ParseNode
 }
 
-func (pt ParseTree) AddNode(node ParseNode)  {
+func (pt ParseTree) AddNode(node ParseNode) {
 	pt.Nodes = append(pt.Nodes, node)
 
 }

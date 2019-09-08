@@ -50,10 +50,20 @@ func (p *parser) parseDecl(isTopLevel bool) ParseNode {
 	} else {
 		return nil
 	}
+
+    return res
 }
 
-func (p *parser) parseTypeDecl(b bool) *TypeDeclNode {
-    res = &TypeDeclNode{
+func (p *parser) parseTypeDecl(isTopLevel bool) *TypeDeclNode {
+	name := l.expect(lexer.Identifier, "")
 
+    res = &TypeDeclNode{
+		Name: NewLocatedString(name)
 	}
+}
+
+func (p *parser) consumeToken() *lexer.Token {
+	ret := p.look(0)
+	p.currentToken += 1
+	return ret
 }
