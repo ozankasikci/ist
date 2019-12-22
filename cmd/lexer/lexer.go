@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ozankasikci/ist/lexer"
+	"github.com/ozankasikci/ist/internal/lexer"
 	"github.com/y0ssar1an/q"
 	"log"
 )
